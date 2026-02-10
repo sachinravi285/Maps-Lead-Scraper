@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Maps Lead Scraper</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3a8a, #2563eb, #4f46e5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: bgMove 8s infinite alternate ease-in-out;
+        }
+
+        @keyframes bgMove {
+            0% { background-position: left; }
+            100% { background-position: right; }
+        }
+
+        .card {
+            width: 420px;
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(18px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
+            color: white;
+            animation: fadeIn 0.8s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group {
+            margin-bottom: 18px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 10px;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            transition: 0.3s ease;
+        }
+
+        input:focus {
+            box-shadow: 0 0 0 2px #60a5fa;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: white;
+            color: #1e3a8a;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s ease;
+            position: relative;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        button.loading {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .loader {
+            width: 18px;
+            height: 18px;
+            border: 3px solid #1e3a8a;
+            border-top: 3px solid transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: none;
+        }
+
+        button.loading .loader {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: translateY(-50%) rotate(360deg); }
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            text-align: center;
+            opacity: 0.8;
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                width: 90%;
+                padding: 25px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Google Maps Lead Scraper</h2>
+
+    <form method="POST" action="/run" onsubmit="handleSubmit(event)">
+        <div class="input-group">
+            <input type="text" name="search_query" 
+                   placeholder="Search query (e.g. software development in erode)" required>
+        </div>
+
+        <div class="input-group">
+            <input type="number" name="max_results" 
+                   value="40" min="1" required>
+        </div>
+
+        <div class="input-group">
+            <input type="text" name="output_file" 
+                   value="maps_leads.xlsx" required>
+        </div>
+
+        <button type="submit" id="submitBtn">
+            Run Scraper
+            <div class="loader"></div>
+        </button>
+    </form>
+
+    <div class="footer">
+        Generate targeted business leads instantly
+    </div>
+</div>
+
+<script>
+function handleSubmit(event) {
+    const btn = document.getElementById("submitBtn");
+    btn.classList.add("loading");
+    btn.innerHTML = "Processing...";
+}
+</script>
+
+</body>
+</html>
