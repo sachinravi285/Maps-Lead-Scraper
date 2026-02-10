@@ -29,14 +29,12 @@ def extract_website_data(url):
         response = requests.get(url, headers=HEADERS, timeout=10)
         soup = BeautifulSoup(response.text, "html.parser")
 
-        # Emails
         found = re.findall(EMAIL_REGEX, response.text)
         emails.update(found)
 
         for mail in soup.select("a[href^=mailto]"):
             emails.add(mail.get("href").replace("mailto:", "").strip())
 
-        # Social links
         for a in soup.find_all("a", href=True):
             href = a["href"]
             if any(platform in href for platform in [
@@ -78,7 +76,6 @@ def auto_scroll(page):
 
 def extract_business_links(page):
     links = set()
-
     cards = page.locator('div[role="article"] a[href*="/place/"]')
     count = cards.count()
 
@@ -148,12 +145,10 @@ def extract_business_details(page):
         except:
             pass
 
-        # Rating & Reviews
         rating, reviews = extract_rating_reviews(page)
         data["Rating"] = rating
         data["Reviews Count"] = reviews
 
-        # Website data
         if data["Website URL"]:
             emails, socials = extract_website_data(data["Website URL"])
             data["Email Address"] = emails
@@ -169,7 +164,15 @@ def run_scraper():
     leads = []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False)
+        browser = p.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage"
+            ]
+        )
+
         context = browser.new_context(user_agent=USER_AGENT)
         page = context.new_page()
 
@@ -181,8 +184,6 @@ def run_scraper():
 
         business_links = extract_business_links(page)
 
-        print(f"\nFound {len(business_links)} businesses\n")
-
         for link in business_links:
             try:
                 page.goto(link, timeout=60000)
@@ -190,36 +191,18 @@ def run_scraper():
 
                 details = extract_business_details(page)
 
-                # Skip if no email found
                 if details["Email Address"].strip() == "":
                     continue
 
                 leads.append(details)
-
-                print("Scraped:", details["Business Name"])
 
             except Exception:
                 continue
 
         browser.close()
 
-    df = pd.DataFrame(leads, columns=[
-        "Business Name",
-        "Address",
-        "Phone Number",
-        "Website URL",
-        "Email Address",
-        "Rating",
-        "Reviews Count",
-        "businessType",
-        "Social Media Links"
-    ])
+    df = pd.DataFrame(leads)
 
     df.to_excel(OUTPUT_FILE, index=False)
 
-    print(f"\nSaved to {OUTPUT_FILE}")
-    print(f"Total businesses with email: {len(leads)}")
-
-
-if __name__ == "__main__":
-    run_scraper()
+    return OUTPUT_FILE

@@ -27,14 +27,16 @@ def run_scraper():
         if not output_file.endswith(".xlsx"):
             return "Output file must end with .xlsx"
 
+        # Always save in /tmp (Render writable directory)
+        file_path = os.path.join("/tmp", output_file)
+
+        # Inject values BEFORE running scraper
         scraper.SEARCH_QUERY = search_query
         scraper.MAX_RESULTS = int(max_results)
-        scraper.OUTPUT_FILE = output_file
-
-        scraper.run_scraper()
-
-        file_path = os.path.join("/tmp", output_file)
         scraper.OUTPUT_FILE = file_path
+
+        # Run scraper
+        scraper.run_scraper()
 
         if not os.path.exists(file_path):
             return "File not generated"
