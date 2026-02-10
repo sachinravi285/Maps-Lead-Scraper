@@ -1,6 +1,8 @@
+import os
+os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/opt/render/.cache/ms-playwright"
+
 from flask import Flask, render_template, request, send_file
 import scraper
-import os
 
 app = Flask(__name__)
 
@@ -31,7 +33,8 @@ def run_scraper():
 
         scraper.run_scraper()
 
-        file_path = os.path.abspath(output_file)
+        file_path = os.path.join("/tmp", output_file)
+        scraper.OUTPUT_FILE = file_path
 
         if not os.path.exists(file_path):
             return "File not generated"
@@ -48,4 +51,4 @@ def run_scraper():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()
