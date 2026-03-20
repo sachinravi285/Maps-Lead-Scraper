@@ -2,175 +2,420 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Maps Lead Scraper</title>
+    <title>Maps Lead Scraper | Lead Generation Pro</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #0f172a;
+            --accent: #10b981;
+            --background: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Segoe UI", sans-serif;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
 
         body {
-            height: 100vh;
-            background: linear-gradient(135deg, #1e3a8a, #2563eb, #4f46e5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            animation: bgMove 8s infinite alternate ease-in-out;
+            min-height: 100vh;
+            background: radial-gradient(circle at top right, #e0e7ff 0%, #f8fafc 40%),
+                        radial-gradient(circle at bottom left, #f1f5f9 0%, #f8fafc 100%);
+            color: var(--text-main);
+            padding: 40px 20px;
         }
 
-        @keyframes bgMove {
-            0% { background-position: left; }
-            100% { background-position: right; }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
         }
 
-        .card {
-            width: 420px;
-            padding: 40px;
-            border-radius: 20px;
-            backdrop-filter: blur(18px);
-            background: rgba(255, 255, 255, 0.15);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
-            color: white;
-            animation: fadeIn 0.8s ease;
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(15px); }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        h2 {
-            text-align: center;
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 
+                        0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            padding: 32px;
             margin-bottom: 30px;
-            font-weight: 600;
-            letter-spacing: 0.5px;
+            transition: transform 0.3s ease;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr auto;
+            gap: 16px;
+            align-items: end;
+        }
+
+        @media (max-width: 850px) {
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .input-group {
-            margin-bottom: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-left: 4px;
         }
 
         input {
             width: 100%;
-            padding: 12px 15px;
-            border-radius: 10px;
-            border: none;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
             outline: none;
-            font-size: 14px;
-            transition: 0.3s ease;
         }
 
         input:focus {
-            box-shadow: 0 0 0 2px #60a5fa;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
-        button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
+        button.btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
             border: none;
-            background: white;
-            color: #1e3a8a;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.3s ease;
-            position: relative;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            min-width: 160px;
         }
 
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        button.btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
         }
 
-        button:active {
-            transform: scale(0.97);
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
 
-        button.loading {
-            pointer-events: none;
-            opacity: 0.7;
+        .results-section {
+            display: none;
+            animation: fadeIn 0.8s ease;
         }
 
-        .loader {
-            width: 18px;
-            height: 18px;
-            border: 3px solid #1e3a8a;
-            border-top: 3px solid transparent;
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-success {
+            background: var(--accent);
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-success:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background: #f1f5f9;
+            padding: 16px;
+            text-align: left;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        td {
+            padding: 16px;
+            border-top: 1px solid #f1f5f9;
+            color: var(--text-main);
+            max-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background: #ecfdf5;
+            color: #059669;
+        }
+
+        /* Loader Animation */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top-color: #fff;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            position: absolute;
-            right: 15px;
-            top: 50%;
-            transform: translateY(-50%);
+            animation: spin 1s linear infinite;
             display: none;
         }
 
-        button.loading .loader {
-            display: inline-block;
-        }
-
         @keyframes spin {
-            to { transform: translateY(-50%) rotate(360deg); }
+            to { transform: rotate(360deg); }
         }
 
-        .footer {
-            margin-top: 20px;
-            font-size: 12px;
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .empty-state {
             text-align: center;
-            opacity: 0.8;
+            padding: 60px;
+            color: var(--text-muted);
         }
 
-        @media (max-width: 480px) {
-            .card {
-                width: 90%;
-                padding: 25px;
-            }
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 16px;
+            opacity: 0.2;
         }
 
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2>Google Maps Lead Scraper</h2>
+<div class="container">
+    <div class="header">
+        <h1>Maps Lead Scraper</h1>
+        <p>Targeted lead generation with real-time browser automation</p>
+    </div>
 
-    <form method="POST" action="/run" onsubmit="handleSubmit(event)">
-        <div class="input-group">
-            <input type="text" name="search_query" 
-                   placeholder="Search query (e.g. software development in erode)" required>
+    <div class="card">
+        <form id="scraperForm" class="form-grid">
+            <div class="input-group">
+                <label>Search Query</label>
+                <input type="text" name="search_query" id="search_query" 
+                       placeholder="e.g. software development in erode" required>
+            </div>
+
+            <div class="input-group">
+                <label>Max Results</label>
+                <input type="number" name="max_results" id="max_results" 
+                       value="40" min="1" required>
+            </div>
+
+            <div class="input-group">
+                <label>Export Filename</label>
+                <input type="text" name="output_file" id="output_file" 
+                       value="maps_leads.xlsx" required>
+            </div>
+
+            <button type="submit" class="btn-primary" id="submitBtn">
+                <span id="btnText">Run Scraper</span>
+                <div class="spinner" id="spinner"></div>
+            </button>
+        </form>
+    </div>
+
+    <div id="resultsSection" class="results-section">
+        <div class="results-header">
+            <h2>Scraped Leads (<span id="count">0</span>) <span id="finishBadge" class="status-badge" style="display: none; margin-left: 10px; background: #ecfdf5; color: #059669;">Completed</span></h2>
+            <a href="#" id="downloadBtn" class="btn-success" style="display: none;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Excel
+            </a>
         </div>
 
-        <div class="input-group">
-            <input type="number" name="max_results" 
-                   value="40" min="1" required>
+        <div class="card" style="padding: 0; overflow: hidden;">
+            <div class="table-container">
+                <table id="leadsTable">
+                    <thead>
+                        <tr>
+                            <th>Business Name</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Address</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadsBody">
+                        <!-- Data will be injected here -->
+                    </tbody>
+                </table>
+            </div>
         </div>
+    </div>
 
-        <div class="input-group">
-            <input type="text" name="output_file" 
-                   value="maps_leads.xlsx" required>
-        </div>
-
-        <button type="submit" id="submitBtn">
-            Run Scraper
-            <div class="loader"></div>
-        </button>
-    </form>
-
-    <div class="footer">
-        Generate targeted business leads instantly
+    <div id="loadingMessage" style="display: none; text-align: center; margin-top: 20px; color: var(--text-muted);">
+        <p>Automation in progress... Check the browser window for real-time scrolling.</p>
     </div>
 </div>
 
 <script>
-function handleSubmit(event) {
-    const btn = document.getElementById("submitBtn");
-    btn.classList.add("loading");
-    btn.innerHTML = "Processing...";
-}
+document.getElementById('scraperForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const btn = document.getElementById('submitBtn');
+    const btnText = document.getElementById('btnText');
+    const spinner = document.getElementById('spinner');
+    const resultsSection = document.getElementById('resultsSection');
+    const loadingMessage = document.getElementById('loadingMessage');
+    const leadsBody = document.getElementById('leadsBody');
+    const countSpan = document.getElementById('count');
+    const downloadBtn = document.getElementById('downloadBtn');
+    const finishBadge = document.getElementById('finishBadge');
+
+    // Reset UI
+    resultsSection.style.display = 'none';
+    loadingMessage.style.display = 'block';
+    btn.disabled = true;
+    btnText.textContent = 'Processing...';
+    spinner.style.display = 'block';
+    
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch('/run', {
+            method: 'POST',
+            body: formData
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let leadsCount = 0;
+        leadsBody.innerHTML = '';
+        countSpan.textContent = '0';
+        downloadBtn.style.display = 'none';
+        finishBadge.style.display = 'none';
+        resultsSection.style.display = 'block';
+
+        let buffer = '';
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            buffer += decoder.decode(value, { stream: true });
+            const lines = buffer.split('\n\n');
+            buffer = lines.pop(); // Keep partial line in buffer
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const payload = JSON.parse(line.substring(6));
+                        
+                        if (payload.type === 'lead') {
+                            const lead = payload.data;
+                            leadsCount++;
+                            countSpan.textContent = leadsCount;
+                            
+                            const tr = document.createElement('tr');
+                            tr.innerHTML = `
+                                <td title="${lead['Business Name']}">${lead['Business Name']}</td>
+                                <td>${lead['Phone Number'] || 'N/A'}</td>
+                                <td>${lead['Email Address'] || 'N/A'}</td>
+                                <td title="${lead['Address']}">${lead['Address'] || 'N/A'}</td>
+                                <td>${lead['businessType']}</td>
+                            `;
+                            leadsBody.prepend(tr); // Show newest at top
+                        } else if (payload.type === 'done') {
+                            downloadBtn.href = payload.download_url;
+                            downloadBtn.style.display = 'flex';
+                            finishBadge.style.display = 'inline-flex';
+                            alert('Scraping Finished! ' + payload.count + ' leads collected.');
+                        } else if (payload.type === 'error') {
+                            alert('Error: ' + payload.message);
+                        }
+                    } catch (e) {
+                        console.error('Error parsing line:', line, e);
+                    }
+                }
+            }
+        }
+    } catch (err) {
+        alert('An error occurred during scraping.');
+        console.error(err);
+    } finally {
+        btn.disabled = false;
+        btnText.textContent = 'Run Scraper';
+        spinner.style.display = 'none';
+        loadingMessage.style.display = 'none';
+    }
+});
 </script>
 
 </body>

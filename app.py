@@ -1,10 +1,11 @@
 import os
-os.environ["PLAYWRIGHT_BROWSERS_PATH"] = "/opt/render/.cache/ms-playwright"
-
-from flask import Flask, render_template, request, send_file
+import tempfile
+import json
+from flask import Flask, render_template, request, send_file, jsonify, Response
 import scraper
 
 app = Flask(__name__)
+
 
 @app.route("/")
 def index():
@@ -19,38 +20,52 @@ def run_scraper():
         output_file = request.form.get("output_file", "").strip()
 
         if not search_query:
-            return "Search query is required"
+            return jsonify({"error": "Search query is required"}), 400
 
         if not max_results.isdigit():
-            return "Max results must be a number"
+            return jsonify({"error": "Max results must be a number"}), 400
 
         if not output_file.endswith(".xlsx"):
-            return "Output file must end with .xlsx"
+            return jsonify({"error": "Output file must end with .xlsx"}), 400
 
-        # Always save in /tmp (Render writable directory)
-        file_path = os.path.join("/tmp", output_file)
+        # Use a cross-platform temporary directory
+        file_path = os.path.join(tempfile.gettempdir(), output_file)
 
         # Inject values BEFORE running scraper
         scraper.SEARCH_QUERY = search_query
         scraper.MAX_RESULTS = int(max_results)
         scraper.OUTPUT_FILE = file_path
 
-        # Run scraper
-        scraper.run_scraper()
+        def generate():
+            try:
+                for msg in scraper.run_scraper():
+                    # If it's the final message, add the download filename
+                    if msg["type"] == "done":
+                        msg["filename"] = os.path.basename(msg["file"])
+                        msg["download_url"] = f"/download/{msg['filename']}"
+                    
+                    yield f"data: {json.dumps(msg)}\n\n"
+            except Exception as e:
+                yield f"data: {json.dumps({'type': 'error', 'message': str(e)})}\n\n"
 
-        if not os.path.exists(file_path):
-            return "File not generated"
+        return Response(generate(), mimetype="text/event-stream")
 
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/download/<filename>")
+def download_file(filename):
+    file_path = os.path.join(tempfile.gettempdir(), filename)
+    if os.path.exists(file_path):
         return send_file(
             file_path,
             as_attachment=True,
-            download_name=os.path.basename(file_path),
+            download_name=filename,
             mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-
-    except Exception as e:
-        return f"Error: {str(e)}"
+    return "File not found", 404
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

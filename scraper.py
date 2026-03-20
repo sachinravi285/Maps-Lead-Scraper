@@ -1,3 +1,4 @@
+import os
 import re
 import time
 import random
@@ -53,9 +54,13 @@ def extract_website_data(url):
 
 
 def auto_scroll(page):
-    page.wait_for_selector('div[role="feed"]')
-    results_panel = page.locator('div[role="feed"]')
+    try:
+        page.wait_for_selector('div[role="feed"]', timeout=10000)
+    except:
+        print("Results panel not found.")
+        return
 
+    results_panel = page.locator('div[role="feed"]')
     last_count = 0
 
     for _ in range(50):
@@ -84,32 +89,9 @@ def extract_business_links(page):
         if href:
             links.add(href.split("&")[0])
 
-    return list(links)[:MAX_RESULTS]
+    return list(links)
 
 
-def extract_rating_reviews(page):
-    rating = ""
-    reviews = ""
-
-    try:
-        html = page.content()
-        soup = BeautifulSoup(html, "html.parser")
-        scripts = soup.find_all("script", type="application/ld+json")
-
-        for script in scripts:
-            try:
-                data = json.loads(script.string)
-                if isinstance(data, dict) and "aggregateRating" in data:
-                    agg = data["aggregateRating"]
-                    rating = agg.get("ratingValue", "")
-                    reviews = agg.get("reviewCount", "")
-                    break
-            except:
-                continue
-    except:
-        pass
-
-    return str(rating), str(reviews)
 
 
 def extract_business_details(page):
@@ -119,8 +101,6 @@ def extract_business_details(page):
         "Phone Number": "",
         "Website URL": "",
         "Email Address": "",
-        "Rating": "",
-        "Reviews Count": "",
         "businessType": SEARCH_QUERY,
         "Social Media Links": ""
     }
@@ -145,9 +125,6 @@ def extract_business_details(page):
         except:
             pass
 
-        rating, reviews = extract_rating_reviews(page)
-        data["Rating"] = rating
-        data["Reviews Count"] = reviews
 
         if data["Website URL"]:
             emails, socials = extract_website_data(data["Website URL"])
@@ -161,17 +138,20 @@ def extract_business_details(page):
 
 
 def run_scraper():
+    print(f"Scraper started for query: {SEARCH_QUERY}")
     leads = []
 
     with sync_playwright() as p:
+        is_server = os.environ.get("RAILWAY_ENVIRONMENT_ID") or os.environ.get("RENDER") or os.environ.get("VERCEL")
+        
+        print(f"Launching playwright (headless={'True' if is_server else 'False'})...")
+        
         browser = p.chromium.launch(
-            headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage"
-            ]
+            headless=True if is_server else False,
+            args=["--no-sandbox", "--disable-setuid-sandbox"] if is_server else []
         )
+
+
 
         context = browser.new_context(user_agent=USER_AGENT)
         page = context.new_page()
@@ -185,16 +165,21 @@ def run_scraper():
         business_links = extract_business_links(page)
 
         for link in business_links:
+            if len(leads) >= MAX_RESULTS:
+                break
+                
             try:
                 page.goto(link, timeout=60000)
-                time.sleep(random.uniform(3, 5))
+                time.sleep(random.uniform(2, 4))
 
                 details = extract_business_details(page)
 
-                if details["Email Address"].strip() == "":
+                # Skip filter for more results, but check for name at least
+                if not details["Business Name"]:
                     continue
 
                 leads.append(details)
+                yield {"type": "lead", "data": details}
 
             except Exception:
                 continue
@@ -202,7 +187,6 @@ def run_scraper():
         browser.close()
 
     df = pd.DataFrame(leads)
-
     df.to_excel(OUTPUT_FILE, index=False)
 
-    return OUTPUT_FILE
+    yield {"type": "done", "file": OUTPUT_FILE, "count": len(leads)}
